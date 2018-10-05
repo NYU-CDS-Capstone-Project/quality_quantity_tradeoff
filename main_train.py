@@ -2,12 +2,13 @@ from train import train_valid_model, Net
 from plot import plot_results
 import torch.optim as optim
 import argparse
+import pickle
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='./../data', help='directory for data')
-parser.add_argument('--max_layer', default=2, help='possible number of layers in the CNN')
-parser.add_argument('--batch_size', default=4, help='batch size')
+parser.add_argument('--max_layer', type=int, default=2, help='possible number of layers in the CNN')
+parser.add_argument('--batch_size', type=int, default=4, help='batch size')
 
 opt = parser.parse_args()
 
