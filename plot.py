@@ -1,11 +1,12 @@
 from matplotlib import pyplot as plt
 import pickle
+import numpy as np
 
-def plot_results(datadir, figdir):
+def plot_results(datadir, savedir):
     with open(datadir, 'rb') as fd:
-        data = pickle.load(datadir)
+        data = pickle.load(fd)
     plt.figure(figsize=(10, 10))
-    data = [(result['num_params'], result['accuracy']) for result in results]
+    data = [(result['num_params'], result['accuracy']) for result in data]
     data = np.array(sorted(data, key=lambda x:x[0]))
     plt.plot(data[:, 0], data[:, 1])
 
