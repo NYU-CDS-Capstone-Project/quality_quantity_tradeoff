@@ -10,6 +10,7 @@ import torch.nn.functional as F
 
 from data import generate_cifar_loaders
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Cifar2(Dataset):
     def __init__(self, data, label, transform):
@@ -54,6 +55,7 @@ def train(model, train_loader, optimizer, criterion):
     train_loss = 0.0
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()
         outputs = model(inputs)  # torch.autograd.Variable
         loss = criterion(outputs.view(-1), labels.float())
@@ -68,6 +70,7 @@ def valid(model, valid_loader, criterion):
     correct = 0
     for i, data in enumerate(valid_loader, 0):
         inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
         outputs = model(inputs)
         loss = criterion(outputs.view(-1), labels.float())
         valid_loss += loss.item()
@@ -82,11 +85,11 @@ def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose
     train_loader, valid_loader = generate_cifar_loaders(0)
 
     criterion = nn.BCEWithLogitsLoss()
-    
+
 
     for epoch in range(num_epoch):  # loop over the dataset multiple times
         best_acc = 0
-        train_loss = train(model, train_loader, optimizer, criterion)
+        train_loss = train(model.to(device), train_loader, optimizer, criterion)
         if verbose:
             print('Train [%d] loss: %.3f' %
                   (epoch + 1, train_loss))
@@ -96,4 +99,4 @@ def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose
         if verbose:
             print('Valid [%d] loss: %.3f -- accuracy: %.3f' %
                   (epoch + 1, valid_loss, valid_acc))
-    return best_acc.numpy()
+    return best_acc.cpu().numpy()
