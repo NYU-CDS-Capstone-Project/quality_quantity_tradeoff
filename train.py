@@ -8,6 +8,7 @@ from torch.utils.data.dataset import Dataset
 import torch.nn as nn
 import torch.nn.functional as F
 
+from data import generate_cifar_loaders
 
 
 class Cifar2(Dataset):
@@ -77,59 +78,12 @@ def valid(model, valid_loader, criterion):
 
 
 def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose = False):
-    
-    transform = transforms.Compose(
-                [transforms.ToTensor(),
-                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    trainset = torchvision.datasets.CIFAR10(root=data_dir, train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
-                                              shuffle=True, num_workers=2)
-    testset = torchvision.datasets.CIFAR10(root=data_dir, train=False,
-                                           download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                             shuffle=False, num_workers=2)
-    
-    
-    classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-    cat_idx = np.where(np.array(trainset.train_labels)==3)[0]
-    dog_idx = np.where(np.array(trainset.train_labels)==5)[0]
-    
-    cat_array = trainset.train_data[cat_idx]
-    dog_array = trainset.train_data[dog_idx]
-    train_data = np.concatenate([cat_array, dog_array])
-    train_label = np.array([0]*cat_array.shape[0] + [1]*dog_array.shape[0])
-    
-    
-    train_set = Cifar2(train_data, train_label, transform)
+    train_loader, valid_loader = generate_cifar_loaders(0)
 
-
-    valid_size = 0.2
-    random_seed = 10
-
-    num_train = len(train_set)
-    indices = list(range(num_train))
-    split = int(np.floor(valid_size * num_train))
-
-    np.random.seed(random_seed)
-    np.random.shuffle(indices)
-
-    train_idx, valid_idx = indices[split:], indices[:split]
-    train_sampler = SubsetRandomSampler(train_idx)
-    valid_sampler = SubsetRandomSampler(valid_idx)
-
-    train_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=batch_size, sampler=train_sampler,
-        num_workers=2)
-    valid_loader = torch.utils.data.DataLoader(
-        train_set, batch_size=batch_size, sampler=valid_sampler,
-        num_workers=2)
-    
     criterion = nn.BCEWithLogitsLoss()
     
-    
+
     for epoch in range(num_epoch):  # loop over the dataset multiple times
         best_acc = 0
         train_loss = train(model, train_loader, optimizer, criterion)
