@@ -10,7 +10,6 @@ parser.add_argument('--max_layer', default=2, help='possible number of layers in
 parser.add_argument('--batch_size', default=4, help='batch size')
 
 opt = parser.parse_args()
-print(opt)
 
 
 max_layer = opt.max_layer

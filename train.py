@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+
 class Cifar2(Dataset):
     def __init__(self, data, label, transform):
         super(Cifar2, self).__init__()
@@ -48,12 +49,12 @@ class Net(nn.Module):
         return x
 
 
-def train(model, train_loader, optimizer):
+def train(model, train_loader, optimizer, criterion):
     train_loss = 0.0
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
         optimizer.zero_grad()
-        outputs = model(inputs)
+        outputs = model(inputs)  # torch.autograd.Variable
         loss = criterion(outputs.view(-1), labels.float())
         loss.backward()
         optimizer.step()
@@ -61,7 +62,7 @@ def train(model, train_loader, optimizer):
     return train_loss/len(train_loader)
 
 
-def valid(model, valid_loader):
+def valid(model, valid_loader, criterion):
     valid_loss = 0.0
     correct = 0
     for i, data in enumerate(valid_loader, 0):
@@ -131,11 +132,11 @@ def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose
     
     for epoch in range(num_epoch):  # loop over the dataset multiple times
         best_acc = 0
-        train_loss = train(model, train_loader, optimizer)
+        train_loss = train(model, train_loader, optimizer, criterion)
         if verbose:
             print('Train [%d] loss: %.3f' %
                   (epoch + 1, train_loss))
-        valid_loss, valid_acc = valid(model, valid_loader)
+        valid_loss, valid_acc = valid(model, valid_loader, criterion)
         if valid_acc > best_acc:
             best_acc = valid_acc
         if verbose:
