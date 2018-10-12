@@ -80,15 +80,14 @@ def valid(model, valid_loader, criterion):
     return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
-def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose = False):
+def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, early_stopping_limit=10, verbose = False):
 
     train_loader, valid_loader = generate_cifar_loaders(0)
 
     criterion = nn.BCEWithLogitsLoss()
-
-
+    best_acc = 0
+    count_no_improv = 0
     for epoch in range(num_epoch):  # loop over the dataset multiple times
-        best_acc = 0
         train_loss = train(model.to(device), train_loader, optimizer, criterion)
         if verbose:
             print('Train [%d] loss: %.3f' %
@@ -96,7 +95,12 @@ def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, verbose
         valid_loss, valid_acc = valid(model, valid_loader, criterion)
         if valid_acc > best_acc:
             best_acc = valid_acc
+            count_no_improv = 0
+        else:
+            count_no_improv += 1
         if verbose:
             print('Valid [%d] loss: %.3f -- accuracy: %.3f' %
                   (epoch + 1, valid_loss, valid_acc))
+        if count_no_improv > early_stopping_limit:
+            break
     return best_acc.cpu().numpy()

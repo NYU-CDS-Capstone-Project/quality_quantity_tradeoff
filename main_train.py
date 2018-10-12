@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='./../data', help='directory for data')
 parser.add_argument('--max_layer', type=int, default=2, help='possible number of layers in the CNN')
 parser.add_argument('--batch_size', type=int, default=4, help='batch size')
-parser.add_argument('--epochs', type=int, default=10, help='num epoch')
+parser.add_argument('--epochs', type=int, default=50, help='num epoch')
 
 opt = parser.parse_args()
 
@@ -26,7 +26,7 @@ for layer in layers:
     nb_params = sum(p.numel() for p in net.parameters())
 
     optimizer = optim.Adam(net.parameters(), lr=0.001)
-    acc = train_valid_model(opt.data_dir, opt.batch_size, net, opt.epochs, optimizer, True)
+    acc = train_valid_model(opt.data_dir, opt.batch_size, net, opt.epochs, optimizer, verbose=True)
     results.append({'layers':layer, 'num_params': nb_params, 'accuracy': acc})
 
 
