@@ -24,7 +24,7 @@ class Cifar2(Dataset):
         return self.label.shape[0]
 
 
-
+## Simple CNN
 class Net(nn.Module):
     def __init__(self, layers=[0, 0]):
         super(Net, self).__init__()
@@ -49,6 +49,63 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+    
+    
+## VGG adapted
+class VGG_net(nn.Module):
+    def __init__(self, conv_params, n_features, init_weights=True):
+        super(VGG_net, self).__init__()
+        self.convnet = make_layers(conv_params)
+        self.classifier = nn.Sequential(
+            nn.Linear(n_features, n_features),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(n_features, 1),
+        )
+        if init_weights:
+            self._initialize_weights()
+
+    def forward(self, x):
+        x = self.convnet(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+    
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+
+def make_layers(conv_params, batch_norm=False):
+    """ conv_params (list): each element corresponds to a layer component (pooling or conv & non-lin)
+            - 'M' = maxpooling, stride of 2
+            - integer = nb of kernels to apply = nb of output channels
+    """
+    layers = []
+    in_channels = 3
+    for v in conv_params:
+        if v == 'M':
+            layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+        else:
+            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            if batch_norm:
+                layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
+            else:
+                layers += [conv2d, nn.ReLU(inplace=True)]
+            in_channels = v
+    return nn.Sequential(*layers)
+
+
+
+
 
 
 def train(model, train_loader, optimizer, criterion):
@@ -104,3 +161,4 @@ def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, early_s
         if count_no_improv > early_stopping_limit:
             break
     return best_acc.cpu().numpy()
+
