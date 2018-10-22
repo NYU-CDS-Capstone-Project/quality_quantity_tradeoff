@@ -13,6 +13,8 @@ parser.add_argument('--max_layer', type=int, default=2, help='possible number of
 parser.add_argument('--batch_size', type=int, default=4, help='batch size')
 parser.add_argument('--epochs', type=int, default=50, help='num epoch')
 parser.add_argument('--early_stop', type=int, default=10, help='nb of epochs with no improvements before stopping')
+parser.add_argument('--training_size', type=int, default=8000, help='nb of training examples')
+
 
 opt = parser.parse_args()
 model_choice = opt.model
@@ -30,7 +32,7 @@ if model_choice == 'cnn':
         nb_params = sum(p.numel() for p in net.parameters())
 
         optimizer = optim.Adam(net.parameters(), lr=0.001)
-        acc = train_valid_model(opt.data_dir, opt.batch_size, net, opt.epochs, optimizer, verbose=True)
+        acc = train_valid_model(opt.data_dir, opt.training_size, opt.batch_size, net, opt.epochs, optimizer, verbose=True)
         results.append({'layers':layer, 'num_params': nb_params, 'accuracy': acc})
 
         
@@ -56,7 +58,7 @@ elif model_choice == 'vgg':
         nb_params = sum(p.numel() for p in net.parameters())
         
         optimizer = optim.Adam(net.parameters(), lr=0.001)
-        acc = train_valid_model(opt.data_dir, opt.batch_size, net, opt.epochs, optimizer, opt.early_stop, verbose=True)
+        acc = train_valid_model(opt.data_dir, opt.training_size, opt.batch_size, net, opt.epochs, optimizer, opt.early_stop, verbose=True)
         results.append({'architecture': architectures[ex], 'num_params': nb_params, 'accuracy': acc})
     
 
@@ -64,4 +66,4 @@ elif model_choice == 'vgg':
 with open("test.np", "wb") as fp:
     pickle.dump(results, fp)
 
-plot_results("test.np", 'test.png')
+#plot_results("test.np", 'test.png')

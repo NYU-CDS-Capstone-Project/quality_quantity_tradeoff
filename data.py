@@ -56,7 +56,7 @@ class Cifar2(Dataset):
 train_set = Cifar2(train_data, train_label, transform)
 
 
-def generate_cifar_loaders(label_error_rate):
+def generate_cifar_loaders(training_size, label_error_rate):
     train_set = Cifar2(train_data, train_label, transform)
 
     batch_size = 4
@@ -70,7 +70,7 @@ def generate_cifar_loaders(label_error_rate):
     np.random.seed(random_seed)
     np.random.shuffle(indices)
 
-    train_idx, valid_idx = indices[split:], indices[:split]
+    train_idx, valid_idx = indices[split:][:training_size], indices[:split]
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
 

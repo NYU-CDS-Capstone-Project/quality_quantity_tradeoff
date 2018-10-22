@@ -137,9 +137,9 @@ def valid(model, valid_loader, criterion):
     return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
-def train_valid_model(data_dir, batch_size, model, num_epoch, optimizer, early_stopping_limit=10, verbose = False):
+def train_valid_model(data_dir, training_size, batch_size, model, num_epoch, optimizer, early_stopping_limit=10, verbose = False):
 
-    train_loader, valid_loader = generate_cifar_loaders(0)
+    train_loader, valid_loader = generate_cifar_loaders(training_size, 0)
 
     criterion = nn.BCEWithLogitsLoss()
     best_acc = 0
