@@ -27,7 +27,7 @@ for quantity in [8000, 10000]:
         results.append({'quality':quality, 'quantity': quantity, 'accuracy': acc})
 
 
-with open("test.np", "wb") as fp:
+with open("isoerror_results.np", "wb") as fp:
     pickle.dump(results, fp)
 
-plot_results("test.np", 'test.png')
+plot_results("isoerror_results.np", 'test.png')
