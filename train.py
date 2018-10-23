@@ -8,8 +8,6 @@ from torch.utils.data.dataset import Dataset
 import torch.nn as nn
 import torch.nn.functional as F
 
-from data import generate_cifar_loaders
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Cifar2(Dataset):
@@ -49,8 +47,8 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-    
-    
+
+
 ## VGG adapted
 class VGG_net(nn.Module):
     def __init__(self, conv_params, n_features, init_weights=True):
@@ -70,7 +68,7 @@ class VGG_net(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
-    
+
     def _initialize_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -137,10 +135,7 @@ def valid(model, valid_loader, criterion):
     return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
-def train_valid_model(data_dir, training_size, batch_size, model, num_epoch, optimizer, early_stopping_limit=10, verbose = False):
-
-    train_loader, valid_loader = generate_cifar_loaders(training_size, 0)
-
+def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader, early_stopping_limit=10, verbose = False):
     criterion = nn.BCEWithLogitsLoss()
     best_acc = 0
     count_no_improv = 0
@@ -161,4 +156,3 @@ def train_valid_model(data_dir, training_size, batch_size, model, num_epoch, opt
         if count_no_improv > early_stopping_limit:
             break
     return best_acc.cpu().numpy()
-

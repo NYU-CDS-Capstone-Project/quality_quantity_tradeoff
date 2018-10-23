@@ -57,7 +57,7 @@ train_set = Cifar2(train_data, train_label, transform)
 
 
 def generate_cifar_loaders(training_size, label_error_rate):
-    train_set = Cifar2(train_data, train_label, transform)
+    train_set = Cifar2(train_data, train_label, transform, label_error_rate)
 
     batch_size = 4
     valid_size = 0.2

@@ -5,6 +5,7 @@ import torch.optim as optim
 import argparse
 import pickle
 
+from data import generate_cifar_loaders
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='./../data', help='directory for data')
@@ -21,6 +22,8 @@ model_choice = opt.model
 
 results = []
 
+train_loader, valid_loader = generate_cifar_loaders(opt.training_size, 0)
+
 if model_choice == 'cnn':
     max_layer = opt.max_layer
     layers = [[i, j] for i in range(max_layer) for j in range(max_layer)]
@@ -32,10 +35,9 @@ if model_choice == 'cnn':
         nb_params = sum(p.numel() for p in net.parameters())
 
         optimizer = optim.Adam(net.parameters(), lr=0.001)
-        acc = train_valid_model(opt.data_dir, opt.training_size, opt.batch_size, net, opt.epochs, optimizer, verbose=True)
+        acc = train_valid_model(net, opt.epochs, optimizer, train_loader, valid_loader, verbose=True)
         results.append({'layers':layer, 'num_params': nb_params, 'accuracy': acc})
 
-        
 elif model_choice == 'vgg':
     """ Images are 3*32*32
             - with 5 maxpooling, features obtained are of dimension 1
@@ -51,16 +53,15 @@ elif model_choice == 'vgg':
 		     'ex_7': [16, 16, 16, 16, 'M', 32, 32, 32, 32, 'M', 64, 64, 64, 64, 'M', 128, 128, 128, 128, 'M', 256, 256, 256, 256, 'M']
 		     }
     nb_features = {'ex_1':256, 'ex_2':512, 'ex_3':512, 'ex_4':512, 'ex_5':256, 'ex_6':256, 'ex_7':256}
-    
+
     for ex in architectures.keys():
         net = VGG_net(architectures[ex], nb_features[ex])
         print(architectures[ex])
         nb_params = sum(p.numel() for p in net.parameters())
-        
+
         optimizer = optim.Adam(net.parameters(), lr=0.001)
-        acc = train_valid_model(opt.data_dir, opt.training_size, opt.batch_size, net, opt.epochs, optimizer, opt.early_stop, verbose=True)
+        acc = train_valid_model(net, opt.epochs, optimizer, train_loader, valid_loader, opt.early_stop, verbose=True)
         results.append({'architecture': architectures[ex], 'num_params': nb_params, 'accuracy': acc})
-    
 
 
 with open("test.np", "wb") as fp:
