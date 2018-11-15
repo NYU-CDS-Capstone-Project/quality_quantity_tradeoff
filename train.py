@@ -10,18 +10,6 @@ import torch.nn.functional as F
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-class Cifar2(Dataset):
-    def __init__(self, data, label, transform):
-        super(Cifar2, self).__init__()
-        self.data = data
-        self.label = label
-        self.transform = transform
-    def __getitem__(self, index):
-        return self.transform(self.data[index]), self.label[index]
-    def __len__(self):
-        return self.label.shape[0]
-
-
 ## Simple CNN
 class Net(nn.Module):
     def __init__(self, layers=[0, 0]):
@@ -47,6 +35,15 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
 
 
 ## VGG adapted
@@ -135,24 +132,31 @@ def valid(model, valid_loader, criterion):
     return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
-def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader, early_stopping_limit=10, verbose = False):
+def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader,
+                    savepath, num_iters, early_stopping_limit=10, verbose = False):
     criterion = nn.BCEWithLogitsLoss()
     best_acc = 0
-    count_no_improv = 0
-    for epoch in range(num_epoch):  # loop over the dataset multiple times
-        train_loss = train(model.to(device), train_loader, optimizer, criterion)
-        if verbose:
-            print('Train [%d] loss: %.3f' %
-                  (epoch + 1, train_loss))
-        valid_loss, valid_acc = valid(model, valid_loader, criterion)
-        if valid_acc > best_acc:
-            best_acc = valid_acc
-            count_no_improv = 0
-        else:
-            count_no_improv += 1
-        if verbose:
-            print('Valid [%d] loss: %.3f -- accuracy: %.3f' %
-                  (epoch + 1, valid_loss, valid_acc))
-        if count_no_improv > early_stopping_limit:
-            break
+    for i in range(num_iters):
+        best_acc_iter = 0
+        count_no_improv = 0
+        model._initialize_weights()
+        for epoch in range(num_epoch):  # loop over the dataset multiple times
+            train_loss = train(model.to(device), train_loader, optimizer, criterion)
+            if verbose:
+                print('Train [%d] loss: %.3f' %
+                      (epoch + 1, train_loss))
+            valid_loss, valid_acc = valid(model, valid_loader, criterion)
+            if valid_acc > best_acc_iter:
+                best_acc_iter = valid_acc
+                count_no_improv = 0
+            else:
+                count_no_improv += 1
+            if valid_acc > best_acc:
+                best_acc = valid_acc
+                model.save_state_dict(savepath)
+            if verbose:
+                print('Valid [%d] loss: %.3f -- accuracy: %.3f' %
+                      (epoch + 1, valid_loss, valid_acc))
+            if count_no_improv > early_stopping_limit:
+                break
     return best_acc.cpu().numpy()
