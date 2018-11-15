@@ -117,19 +117,23 @@ def train(model, train_loader, optimizer, criterion):
     return train_loss/len(train_loader)
 
 
-def valid(model, valid_loader, criterion):
+def valid(model, valid_loader, criterion=None, test=False):
     valid_loss = 0.0
     correct = 0
     for i, data in enumerate(valid_loader, 0):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
         outputs = model(inputs)
-        loss = criterion(outputs.view(-1), labels.float())
-        valid_loss += loss.item()
+        if test:
+            loss = criterion(outputs.view(-1), labels.float())
+            valid_loss += loss.item()
         pred = outputs.view(-1)>0.5
         correct += (pred.long()==labels).float().mean()
 
-    return valid_loss/len(valid_loader), correct/len(valid_loader)
+        if test:
+            return correct/len(valid_loader)
+        else:
+            return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
 def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader,
