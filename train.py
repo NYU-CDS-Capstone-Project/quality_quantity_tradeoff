@@ -124,16 +124,16 @@ def valid(model, valid_loader, criterion=None, test=False):
         inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
         outputs = model(inputs)
-        if test:
+        if not test:
             loss = criterion(outputs.view(-1), labels.float())
             valid_loss += loss.item()
         pred = outputs.view(-1)>0.5
         correct += (pred.long()==labels).float().mean()
 
-        if test:
-            return correct/len(valid_loader)
-        else:
-            return valid_loss/len(valid_loader), correct/len(valid_loader)
+    if test:
+        return correct/len(valid_loader)
+    else:
+        return valid_loss/len(valid_loader), correct/len(valid_loader)
 
 
 def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader,
@@ -157,7 +157,7 @@ def train_valid_model(model, num_epoch, optimizer, train_loader, valid_loader,
                 count_no_improv += 1
             if valid_acc > best_acc:
                 best_acc = valid_acc
-                model.save_state_dict(savepath)
+                torch.save(model.state_dict(), savepath)
             if verbose:
                 print('Valid [%d] loss: %.3f -- accuracy: %.3f' %
                       (epoch + 1, valid_loss, valid_acc))

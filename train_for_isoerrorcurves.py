@@ -1,5 +1,6 @@
 from train import train_valid_model, Net, valid
 from plot import plot_results
+import torch
 import torch.optim as optim
 import argparse
 import pickle
@@ -20,8 +21,8 @@ opt = parser.parse_args()
 max_layer = opt.max_layer
 results = []
 
-quantities = []
-qualities = []
+quantities = [8000]
+qualities = [0]
 num_iters = 1
 
 for quantity in quantities:
@@ -30,7 +31,7 @@ for quantity in quantities:
         optimizer = optim.Adam(net.parameters(), lr=0.001)
         train_loader, valid_loader, test_loader = generate_cifar_loaders(quantity, quality)
         acc = train_valid_model(net, opt.epochs, optimizer, train_loader,
-        valid_loader, datestr + 'best_model.pt', num_iters, verbose=False)
+        valid_loader, datestr + 'best_model.pt', num_iters, verbose=True)
 
         net.load_state_dict(torch.load(datestr + 'best_model.pt'))
         test_acc = valid(net, test_loader,test=True)
