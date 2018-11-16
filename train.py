@@ -99,10 +99,6 @@ def make_layers(conv_params, batch_norm=False):
     return nn.Sequential(*layers)
 
 
-
-
-
-
 def train(model, train_loader, optimizer, criterion):
     train_loss = 0.0
     for i, data in enumerate(train_loader, 0):
@@ -131,7 +127,7 @@ def valid(model, valid_loader, criterion=None, test=False):
         correct += (pred.long()==labels).float().mean()
 
     if test:
-        return correct/len(valid_loader)
+        return correct.cpu()/len(valid_loader)
     else:
         return valid_loss/len(valid_loader), correct/len(valid_loader)
 
