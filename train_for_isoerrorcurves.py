@@ -24,6 +24,9 @@ results = []
 quantities = [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 qualities = [0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.10, 0.05, 0]
 num_iters = 4
+class1 = 3
+class2 = 5
+prep_str = datestr + '-class_{}_{}'.format(class1, class2)
 
 for quantity in quantities:
     for quality in qualities:
@@ -31,14 +34,14 @@ for quantity in quantities:
         optimizer = optim.Adam(net.parameters(), lr=0.001)
         train_loader, valid_loader, test_loader = generate_cifar_loaders(quantity, quality)
         acc = train_valid_model(net, opt.epochs, optimizer, train_loader,
-        valid_loader, datestr + 'best_model.pt', num_iters, verbose=True)
+        valid_loader, prep_str + 'best_model.pt', num_iters, verbose=True)
 
-        net.load_state_dict(torch.load(datestr + 'best_model.pt'))
+        net.load_state_dict(torch.load(prep_str + 'best_model.pt'))
         test_acc = valid(net, test_loader,test=True)
         results.append({'quality':quality, 'quantity': quantity, 'accuracy': test_acc})
         print('quality: {} -- quantity: {} -- test_acc: {:.5f}'.format(quality, quantity, test_acc))
 
-with open(datestr + "isoerror_results.np", "wb") as fp:
+with open(prep_str + "isoerror_results.np", "wb") as fp:
     pickle.dump(results, fp)
 
 #plot_results("isoerror_results.np", 'test.png')
