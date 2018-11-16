@@ -21,9 +21,9 @@ opt = parser.parse_args()
 max_layer = opt.max_layer
 results = []
 
-quantities = [8000]
-qualities = [0]
-num_iters = 1
+quantities = [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+qualities = [0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.10, 0.05, 0]
+num_iters = 4
 
 for quantity in quantities:
     for quality in qualities:
