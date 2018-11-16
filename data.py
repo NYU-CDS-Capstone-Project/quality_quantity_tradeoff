@@ -61,11 +61,9 @@ def generate_test_data_label(test_dataset, cat_id, dog_id):
     test_label = np.array([0]*cat_array.shape[0] + [1]*dog_array.shape[0])
     return test_data, test_label
 
-def generate_cifar_loaders(training_size, label_error_rate):
-    cat_id = 3
-    dog_id = 5
-    train_data, train_label = generate_train_data_label(trainset, cat_id, dog_id)
-    test_data, test_label = generate_test_data_label(testset, cat_id, dog_id)
+def generate_cifar_loaders(training_size, label_error_rate, class1 = 3, class2=5):
+    train_data, train_label = generate_train_data_label(trainset, class1, class2)
+    test_data, test_label = generate_test_data_label(testset, class1, class2)
     train_set = Cifar2(train_data, train_label, transform, label_error_rate)
     test_set = Cifar2(test_data, test_label, transform)
     batch_size = 4
