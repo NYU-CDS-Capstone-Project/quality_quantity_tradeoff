@@ -36,7 +36,7 @@ for quantity in quantities:
         net.load_state_dict(torch.load(datestr + 'best_model.pt'))
         test_acc = valid(net, test_loader,test=True)
         results.append({'quality':quality, 'quantity': quantity, 'accuracy': test_acc})
-
+        print('quality: {} -- quantity: {} -- test_acc: {:.5f}'.format(quality, quantity, test_acc))
 
 with open(datestr + "isoerror_results.np", "wb") as fp:
     pickle.dump(results, fp)
