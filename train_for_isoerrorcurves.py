@@ -26,7 +26,7 @@ qualities = [0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.10, 0.05, 0]
 num_iters = 4
 class1 = 3
 class2 = 5
-prep_str = datestr + '-class_{}_{}'.format(class1, class2)
+prep_str = datestr + '-class_{}_{}_'.format(class1, class2)
 
 for quantity in quantities:
     for quality in qualities:
