@@ -75,7 +75,7 @@ def generate_cifar_loaders(training_size, label_error_rate, class1 = 3, class2=5
 
     np.random.seed(random_seed)
     np.random.shuffle(indices)
-    
+
     indices = indices[:training_size]
     split = int(np.floor(valid_size * training_size))
     train_idx, valid_idx = indices[split:], indices[:split]
